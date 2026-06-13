@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { analyticsApi } from "../services/analyticsApi.js";
+import { getSummary } from "../services/analyticsApi.js";
 import { formatCurrency } from "../utils/currency.js";
 
 export default function Dashboard() {
@@ -12,7 +12,7 @@ export default function Dashboard() {
       setError("");
       setLoading(true);
       try {
-        const data = await analyticsApi.getSummary();
+        const data = await getSummary();
         setSummary(data);
       } catch (err) {
         setError(err.message || "Unable to load summary.");

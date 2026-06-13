@@ -1,31 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "../services/authApi.js";
-import { useAuth } from "../app/AuthProvider.jsx";
+import { useReduxAuth } from "../hooks/useReduxAuth.js";
+import { useDispatch } from "react-redux";
+import { clearError } from "../features/authSlice.js";
 
 export default function Register() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const { isAuthenticated, isLoading, error, register } = useReduxAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const response = await authApi.register({ fullname, email, password });
-      login(response.token);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message || "Registration failed.");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(clearError());
+    await register(fullname, email, password);
   };
 
   return (
@@ -64,10 +60,10 @@ export default function Register() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="inline-flex w-full justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Creating account..." : "Create account"}
+          {isLoading ? "Creating account..." : "Create account"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-600">

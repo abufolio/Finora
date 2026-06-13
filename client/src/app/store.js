@@ -1,7 +1,12 @@
-// Placeholder store configuration. Add Redux Toolkit or other store logic here.
+import { configureStore } from '@reduxjs/toolkit'
+import authReducer from '../features/authSlice'
+import transactionReducer from '../features/transactionSlice'
+import budgetReducer from '../features/budgetSlice'
 
-export const store = {
-  getState: () => ({}),
-  dispatch: () => {},
-  subscribe: () => () => {},
-}
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    transactions: transactionReducer,
+    budgets: budgetReducer,
+  },
+})

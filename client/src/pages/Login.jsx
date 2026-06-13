@@ -1,30 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "../services/authApi.js";
-import { useAuth } from "../app/AuthProvider.jsx";
+import { useReduxAuth } from "../hooks/useReduxAuth.js";
+import { useDispatch, useSelector } from "react-redux";
+import { clearError } from "../features/authSlice.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const { isAuthenticated, isLoading, error, login } = useReduxAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const response = await authApi.login({ email, password });
-      login(response.token);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message || "Login failed.");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(clearError());
+    await login(email, password);
   };
 
   return (
@@ -55,10 +51,10 @@ export default function Login() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="inline-flex w-full justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {isLoading ? "Signing in..." : "Sign in"}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-600">
