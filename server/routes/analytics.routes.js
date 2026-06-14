@@ -1,4 +1,5 @@
 import express from "express";
+import sequelize from "../config/db.js";
 import Transaction from "../models/Transaction.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 
@@ -8,20 +9,60 @@ router.use(authMiddleware);
 
 router.get("/", async (req, res, next) => {
   try {
-    const transactions = await Transaction.findAll({
+    // 1. Umumiy daromad va xarajatni olish
+    const typeTotals = await Transaction.findAll({
+      attributes: [
+        "type",
+        [sequelize.fn("SUM", sequelize.col("amount")), "total"],
+      ],
       where: { userId: req.user.id },
+      group: ["type"],
+      raw: true,
     });
 
-    const income = transactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const expense = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    const balance = income - expense;
-    const savings = balance;
+    let income = 0;
+    let expense = 0;
 
-    res.json({ balance, income, expense, savings });
+    typeTotals.forEach((item) => {
+      if (item.type === "income") income = Number(item.total) || 0;
+      if (item.type === "expense") expense = Number(item.total) || 0;
+    });
+
+    const balance = income - expense;
+
+    // 2. Kategoriyalar bo'yicha yig'indilarni olish
+    const categoryTotals = await Transaction.findAll({
+      attributes: [
+        "type",
+        "category",
+        [sequelize.fn("SUM", sequelize.col("amount")), "total"],
+      ],
+      where: { userId: req.user.id },
+      group: ["type", "category"],
+      raw: true,
+    });
+
+    const expenseByCategory = categoryTotals
+      .filter((item) => item.type === "expense")
+      .map((item) => ({
+        name: item.category || "Uncategorized",
+        value: Number(item.total) || 0,
+      }));
+
+    const incomeByCategory = categoryTotals
+      .filter((item) => item.type === "income")
+      .map((item) => ({
+        name: item.category || "Uncategorized",
+        value: Number(item.total) || 0,
+      }));
+
+    res.json({
+      balance,
+      income,
+      expense,
+      expenseByCategory,
+      incomeByCategory,
+    });
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
-import { loginUser, registerUser, fetchCurrentUser, logout } from '../features/authSlice'
+import { loginUser, registerUser, fetchCurrentUser, logout, updateUserProfile, updateUserPassword, uploadUserAvatar } from '../features/authSlice'
 
 export const useReduxAuth = () => {
   const dispatch = useDispatch()
@@ -26,6 +26,18 @@ export const useReduxAuth = () => {
     dispatch(logout())
   }
 
+  const updateProfile = (fullname, email) => {
+    return dispatch(updateUserProfile({ fullname, email }))
+  }
+
+  const updatePassword = (currentPassword, newPassword) => {
+    return dispatch(updateUserPassword({ currentPassword, newPassword }))
+  }
+
+  const uploadAvatar = (formData) => {
+    return dispatch(uploadUserAvatar(formData))
+  }
+
   return {
     user: auth.user,
     token: auth.token,
@@ -34,6 +46,9 @@ export const useReduxAuth = () => {
     error: auth.error,
     login,
     register,
+    updateProfile,
+    updatePassword,
+    uploadAvatar,
     logout: handleLogout,
   }
 }

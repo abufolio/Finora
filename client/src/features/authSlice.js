@@ -43,6 +43,42 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 )
 
+export const updateUserProfile = createAsyncThunk(
+  'auth/updateUserProfile',
+  async ({ fullname, email }, { rejectWithValue }) => {
+    try {
+      const data = await authApi.updateProfile(fullname, email)
+      return data // updated user
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const updateUserPassword = createAsyncThunk(
+  'auth/updateUserPassword',
+  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const data = await authApi.updatePassword(currentPassword, newPassword)
+      return data
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const uploadUserAvatar = createAsyncThunk(
+  'auth/uploadUserAvatar',
+  async (formData, { rejectWithValue }) => {
+    try {
+      const data = await authApi.uploadAvatar(formData)
+      return data // updated user
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
 const initialState = {
   user: null,
   token: localStorage.getItem('finance_manager_token') || null,
@@ -121,6 +157,50 @@ const authSlice = createSlice({
         state.isLoading = false
         state.isAuthenticated = false
         state.token = null
+      })
+
+    // Update Profile
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.user = action.payload
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
+      })
+
+    // Update Password
+    builder
+      .addCase(updateUserPassword.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(updateUserPassword.fulfilled, (state) => {
+        state.isLoading = false
+      })
+      .addCase(updateUserPassword.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
+      })
+
+    // Upload Avatar
+    builder
+      .addCase(uploadUserAvatar.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(uploadUserAvatar.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.user = action.payload
+      })
+      .addCase(uploadUserAvatar.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
       })
   },
 })

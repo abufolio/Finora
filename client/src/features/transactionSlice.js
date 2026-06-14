@@ -7,7 +7,7 @@ export const fetchTransactions = createAsyncThunk(
   async (filters, { rejectWithValue }) => {
     try {
       const data = await transactionApi.getTransactions(filters)
-      return data
+      return data // { transactions, totalCount, totalPages, page }
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -52,6 +52,11 @@ export const deleteTransaction = createAsyncThunk(
 
 const initialState = {
   transactions: [],
+  pagination: {
+    page: 1,
+    totalCount: 0,
+    totalPages: 1,
+  },
   isLoading: false,
   error: null,
   filters: {},
@@ -77,14 +82,19 @@ const transactionSlice = createSlice({
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.isLoading = false
-        state.transactions = action.payload
+        state.transactions = action.payload.transactions
+        state.pagination = {
+          page: action.payload.page,
+          totalCount: action.payload.totalCount,
+          totalPages: action.payload.totalPages,
+        }
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload
       })
 
-    // Create transaction
+    // Create transaction — server dan qaytgan yangi ob'ekt ro'yxatning boshiga qo'shiladi
     builder
       .addCase(createTransaction.pending, (state) => {
         state.isLoading = true
@@ -92,7 +102,8 @@ const transactionSlice = createSlice({
       })
       .addCase(createTransaction.fulfilled, (state, action) => {
         state.isLoading = false
-        state.transactions.push(action.payload)
+        state.transactions.unshift(action.payload)
+        state.pagination.totalCount += 1
       })
       .addCase(createTransaction.rejected, (state, action) => {
         state.isLoading = false
@@ -126,6 +137,7 @@ const transactionSlice = createSlice({
       .addCase(deleteTransaction.fulfilled, (state, action) => {
         state.isLoading = false
         state.transactions = state.transactions.filter((t) => t.id !== action.payload)
+        state.pagination.totalCount = Math.max(0, state.pagination.totalCount - 1)
       })
       .addCase(deleteTransaction.rejected, (state, action) => {
         state.isLoading = false

@@ -30,15 +30,21 @@ export const getTransactions = async (req, res, next) => {
       where.title = { [Op.substring]: search };
     }
 
-    const offset = (page - 1) * limit;
-    const transactions = await Transaction.findAll({
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const { count, rows } = await Transaction.findAndCountAll({
       where,
       limit: Number(limit),
-      offset: Number(offset),
+      offset,
       order: [["date", "DESC"]],
     });
 
-    res.json(transactions);
+    res.json({
+      transactions: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / Number(limit)),
+      page: Number(page),
+    });
   } catch (error) {
     next(error);
   }

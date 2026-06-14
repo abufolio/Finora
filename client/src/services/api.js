@@ -16,6 +16,17 @@ export const buildHeaders = (includeAuth = true) => {
   return headers;
 };
 
+export const buildFormDataHeaders = (includeAuth = true) => {
+  const headers = {};
+  if (includeAuth) {
+    const token = getToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return headers;
+};
+
 export const fetchJson = async (path, options = {}) => {
   const response = await fetch(`${API_URL}${path}`, options);
   const body = await response.json().catch(() => null);

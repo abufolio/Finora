@@ -11,6 +11,7 @@ import {
 export const useReduxTransactions = () => {
   const dispatch = useDispatch()
   const transactions = useSelector((state) => state.transactions.transactions)
+  const pagination = useSelector((state) => state.transactions.pagination)
   const isLoading = useSelector((state) => state.transactions.isLoading)
   const error = useSelector((state) => state.transactions.error)
   const filters = useSelector((state) => state.transactions.filters)
@@ -37,6 +38,7 @@ export const useReduxTransactions = () => {
 
   return {
     transactions,
+    pagination,
     isLoading,
     error,
     filters,
