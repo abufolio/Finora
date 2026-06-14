@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { formatCurrency } from "../utils/currency.js";
+import { formatCurrency, formatCompactCurrency } from "../utils/currency.js";
 
 const COLORS = [
   "#0ea5e9",
@@ -37,13 +37,16 @@ export default function Reports() {
     return (
       <div className="p-8 text-center text-slate-500">Loading reports...</div>
     );
+
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+
   if (!summary) return null;
 
   const { expenseByCategory = [], incomeByCategory = [] } = summary;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 pb-24 md:pb-0">
+      {/* Header */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">
           Financial Reports
@@ -53,14 +56,16 @@ export default function Reports() {
         </p>
       </div>
 
+      {/* Pie Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Expenses Chart */}
+        {/* Expenses */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">
             Expenses by Category
           </h2>
+
           {expenseByCategory.length > 0 ? (
-            <div className="mt-6 h-80">
+            <div className="mt-6 w-full h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -79,6 +84,7 @@ export default function Reports() {
                       />
                     ))}
                   </Pie>
+
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                 </PieChart>
@@ -89,13 +95,14 @@ export default function Reports() {
           )}
         </div>
 
-        {/* Income Chart */}
+        {/* Income */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">
             Income by Category
           </h2>
+
           {incomeByCategory.length > 0 ? (
-            <div className="mt-6 h-80">
+            <div className="mt-6 w-full h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -114,6 +121,7 @@ export default function Reports() {
                       />
                     ))}
                   </Pie>
+
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
                 </PieChart>
@@ -125,17 +133,19 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Overview Bar Chart */}
+      {/* Bar Chart */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">
           Income vs Expense
         </h2>
-        <div className="mt-6 h-80">
+
+        {/* 🔥 FIX: height berildi */}
+        <div className="mt-6 w-full h-85">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={[
-                { name: "Income", value: summary.income, fill: "#10b981" },
-                { name: "Expense", value: summary.expense, fill: "#f43f5e" },
+                { name: "Income", value: summary.income },
+                { name: "Expense", value: summary.expense },
               ]}
             >
               <CartesianGrid
@@ -143,23 +153,23 @@ export default function Reports() {
                 vertical={false}
                 stroke="#e2e8f0"
               />
+
               <XAxis dataKey="name" axisLine={false} tickLine={false} />
+
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(val) => `$${val}`}
+                tickFormatter={(val) => formatCompactCurrency(val)}
               />
+
               <Tooltip
                 formatter={(value) => formatCurrency(value)}
                 cursor={{ fill: "transparent" }}
               />
+
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                {[0, 1].map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={index === 0 ? "#10b981" : "#f43f5e"}
-                  />
-                ))}
+                <Cell fill="#10b981" />
+                <Cell fill="#f43f5e" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
