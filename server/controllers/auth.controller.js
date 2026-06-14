@@ -23,6 +23,12 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters long." });
+    }
+
     const existing = await User.findOne({ where: { email } });
     if (existing) {
       return res.status(409).json({ message: "Email already registered." });
@@ -43,7 +49,9 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
     }
 
     const user = await User.findOne({ where: { email } });
@@ -74,9 +82,11 @@ export const getProfile = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const { fullname, email } = req.body;
-    
+
     if (!fullname || !email) {
-      return res.status(400).json({ message: "Fullname and email are required." });
+      return res
+        .status(400)
+        .json({ message: "Fullname and email are required." });
     }
 
     if (email !== req.user.email) {
@@ -101,7 +111,15 @@ export const updatePassword = async (req, res, next) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "Current and new password are required." });
+      return res
+        .status(400)
+        .json({ message: "Current and new password are required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "New password must be at least 8 characters long." });
     }
 
     const isValid = await bcrypt.compare(currentPassword, req.user.password);
